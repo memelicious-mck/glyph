@@ -1,0 +1,26 @@
+{
+  "name": "glyph",
+  "version": "1.0.0",
+  "description": "Lightweight daily notes, TODOs and follow-ups app",
+  "main": "main.js",
+  "scripts": {
+    "start": "node launch.js",
+    "build": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.glyph.app",
+    "productName": "Glyph",
+    "win": {
+      "target": "portable"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*"
+    ]
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glyph</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ─── Title bar ─────────────────────────────────────────────── -->
+  <header class="titlebar">
+    <div class="titlebar-drag"><span class="app-name">Glyph</span></div>
+    <div class="titlebar-buttons">
+      <button class="tb-btn" id="btn-settings" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-pin" title="Always on Top">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 4.5l-4 4L7 10l-1.5 1.5 7 7L14 17l1.5-4 4-4"/><path d="M9 15l-4.5 4.5"/><path d="M14.5 4L20 9.5"/>
+        </svg>
+      </button>
+      <button class="tb-btn" id="btn-minimize" title="Minimize to Tray">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="tb-btn tb-close" id="btn-close" title="Close to Tray">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Date header ───────────────────────────────────────────── -->
+  <nav class="date-header">
+    <button class="nav-btn" id="btn-prev">&#9664;</button>
+    <div class="date-center" id="date-center">
+      <span id="date-text"></span>
+      <span class="cal-arrow" id="cal-arrow">&#9662;</span>
+    </div>
+    <button class="nav-btn" id="btn-next">&#9654;</button>
+    <button class="nav-btn nav-today" id="btn-today">TODAY</button>
+  </nav>
+
+  <!-- ─── Calendar ──────────────────────────────────────────────── -->
+  <div class="calendar" id="calendar">
+    <div class="cal-head">
+      <button class="cal-btn" id="cal-prev">&#9664;</button>
+      <span class="cal-label" id="cal-label"></span>
+      <button class="cal-btn" id="cal-next">&#9654;</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- ─── Content ───────────────────────────────────────────────── -->
+  <main class="content" id="content">
+
+    <!-- TODOS -->
+    <section class="section todos-section" data-section="todos">
+      <div class="section-header" id="todos-hdr">
+        <span class="section-chev open" id="todos-chev">&#9654;</span>
+        <span class="section-title">TODOS</span>
+      </div>
+      <div class="section-body" id="todos-body">
+        <div id="todos-list"></div>
+        <div class="click-area" id="todos-click"></div>
+      </div>
+    </section>
+
+    <!-- FOLLOW-UPS -->
+    <section class="section followups-section" data-section="followups">
+      <div class="section-header" id="followups-hdr">
+        <span class="section-chev open" id="followups-chev">&#9654;</span>
+        <span class="section-title">FOLLOW-UPS</span>
+      </div>
+      <div class="section-body" id="followups-body">
+        <div id="followups-list"></div>
+        <div class="click-area" id="followups-click"></div>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="section notes-section" data-section="notes">
+      <div class="section-header" id="notes-hdr">
+        <span class="section-chev open" id="notes-chev">&#9654;</span>
+        <span class="section-title">NOTES</span>
+      </div>
+      <div class="section-body notes-body" id="notes-body">
+        <div id="notes-blocks"></div>
+        <div class="click-area notes-click" id="notes-click"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── Footer ────────────────────────────────────────────────── -->
+  <footer class="shortcut-bar">
+    <span id="hint-todo"></span>
+    <span id="hint-followup"></span>
+    <span id="hint-note"></span>
+    <span id="hint-callout"></span>
+    <span id="hint-pin"></span>
+    <span>Esc Hide</span>
+  </footer>
+
+  <!-- ─── Settings ──────────────────────────────────────────────── -->
+  <div class="overlay" id="settings-overlay">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <span>Settings</span>
+        <button class="tb-btn" id="btn-close-settings">&#10005;</button>
+      </div>
+      <div class="settings-body">
+        <div class="field">
+          <label>Toggle Window (Global)</label>
+          <div class="shortcut-capture" id="sc-global" tabindex="0" data-key="globalShortcut"></div>
+        </div>
+        <div class="field">
+          <label>New Todo</label>
+          <div class="shortcut-capture" id="sc-todo" tabindex="0" data-key="shortcuts.newTodo"></div>
+        </div>
+        <div class="field">
+          <label>New Follow-up</label>
+          <div class="shortcut-capture" id="sc-followup" tabindex="0" data-key="shortcuts.newFollowup"></div>
+        </div>
+        <div class="field">
+          <label>Focus Notes</label>
+          <div class="shortcut-capture" id="sc-note" tabindex="0" data-key="shortcuts.newNote"></div>
+        </div>
+        <div class="field">
+          <label>Toggle Callout</label>
+          <div class="shortcut-capture" id="sc-callout" tabindex="0" data-key="shortcuts.callout"></div>
+        </div>
+        <div class="field">
+          <label>Pin on Top</label>
+          <div class="shortcut-capture" id="sc-pin" tabindex="0" data-key="shortcuts.pinWindow"></div>
+        </div>
+        <div class="field">
+          <label>Section Order</label>
+          <div id="section-order-list" class="section-order-list"></div>
+        </div>
+        <div class="field">
+          <label>Accent Color</label>
+          <div class="color-row">
+            <input type="color" id="cfg-color-picker"/>
+            <input type="text" id="cfg-color-text" maxlength="7" spellcheck="false"/>
+          </div>
+        </div>
+        <button class="save-btn" id="btn-save-settings">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
