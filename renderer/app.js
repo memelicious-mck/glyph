@@ -817,6 +817,7 @@
     $('sc-pin').textContent       = prettySC(config.shortcuts?.pinWindow);
     $('cfg-color-picker').value   = config.accentColor || '#5D100A';
     $('cfg-color-text').value     = config.accentColor || '#5D100A';
+    $('cfg-tray-only').checked    = !!config.trayOnly;
     renderSectionOrderUI();
     overlay.classList.add('open');
   }
@@ -853,6 +854,7 @@
   $('cfg-color-text').addEventListener('input', e => {
     if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) { $('cfg-color-picker').value=e.target.value; pendingCfg.accentColor=e.target.value; }
   });
+  $('cfg-tray-only').addEventListener('change', e => { pendingCfg.trayOnly = e.target.checked; });
   $('btn-save-settings').addEventListener('click', async () => {
     config = await window.api.saveConfig(pendingCfg);
     applyAccent(config.accentColor);

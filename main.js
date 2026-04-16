@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = {
   globalShortcut: 'CmdOrCtrl+Alt+N',
   accentColor: '#5D100A',
   alwaysOnTop: false,
+  trayOnly: false,
   windowBounds: { width: 380, height: 480 },
   shortcuts: {
     newNote: 'CmdOrCtrl+N',
@@ -138,7 +139,7 @@ function createWindow() {
     backgroundColor: '#00000000',
     alwaysOnTop: config.alwaysOnTop,
     show: false,
-    skipTaskbar: false,
+    skipTaskbar: !!config.trayOnly,
     icon: nativeImage.createFromBuffer(generateIcon(config.accentColor, 32)),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -252,6 +253,9 @@ function setupIPC() {
     if (incoming.alwaysOnTop !== undefined && win) {
       win.setAlwaysOnTop(incoming.alwaysOnTop);
       updateTrayMenu();
+    }
+    if (incoming.trayOnly !== undefined && win) {
+      win.setSkipTaskbar(!!incoming.trayOnly);
     }
     if (incoming.accentColor && tray) {
       tray.setImage(nativeImage.createFromBuffer(generateIcon(incoming.accentColor, 16)));

@@ -453,3 +453,34 @@ body {
   transition: color .12s;
 }
 .section-order-btn:hover { color: var(--text); }
+
+/* ─── Toggle switch ──────────────────────────────────────────────── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.toggle-desc {
+  font-size: 11px; color: var(--text-sec);
+}
+.toggle-switch {
+  position: relative; display: inline-block;
+  width: 34px; height: 18px; flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0; width: 0; height: 0;
+}
+.toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: background .2s, border-color .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  height: 12px; width: 12px; left: 2px; bottom: 2px;
+  background: var(--text-sec); transition: transform .2s, background .2s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--accent); border-color: var(--accent);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px); background: #fff;
+}

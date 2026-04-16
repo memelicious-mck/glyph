@@ -3,8 +3,9 @@ const electron = require('electron');
 
 const child = spawn(electron, ['.'], {
   cwd: __dirname,
-  stdio: 'inherit',
+  stdio: 'ignore',
+  detached: true,
   windowsHide: false,
 });
 
-child.on('close', (code) => process.exit(code));
+child.unref();

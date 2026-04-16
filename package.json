@@ -1,14 +1,14 @@
 {
   "name": "glyph",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lightweight daily notes, TODOs and follow-ups app",
   "main": "main.js",
   "scripts": {
     "start": "node launch.js",
-    "build": "electron-builder --win portable",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:linux": "electron-builder --linux"
+    "build": "node node_modules/electron-builder/cli.js --win portable",
+    "build:win": "node node_modules/electron-builder/cli.js --win",
+    "build:mac": "node node_modules/electron-builder/cli.js --mac",
+    "build:linux": "node node_modules/electron-builder/cli.js --linux"
   },
   "build": {
     "appId": "com.glyph.app",
@@ -17,7 +17,8 @@
       "target": [
         "nsis",
         "portable"
-      ]
+      ],
+      "sign": false
     },
     "mac": {
       "target": "dmg"
