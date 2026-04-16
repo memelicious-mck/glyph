@@ -17,8 +17,7 @@
       "target": [
         "nsis",
         "portable"
-      ],
-      "sign": false
+      ]
     },
     "mac": {
       "target": "dmg"
