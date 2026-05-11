@@ -32,6 +32,14 @@ jobs:
 
       - run: npm ci
 
+      - name: Inject Google API Secrets
+        shell: bash
+        run: |
+          node -e "const fs=require('fs'); let c=fs.readFileSync('google-sync.js','utf8'); c=c.replace('INJECT_CLIENT_ID_HERE', process.env.CLIENT_ID).replace('INJECT_CLIENT_SECRET_HERE', process.env.CLIENT_SECRET); fs.writeFileSync('google-sync.js', c);"
+        env:
+          CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
       - run: ${{ matrix.build_cmd }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

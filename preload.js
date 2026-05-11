@@ -10,4 +10,11 @@ contextBridge.exposeInMainWorld('api', {
   minimizeWindow:   ()                  => ipcRenderer.send('minimize-window'),
   closeWindow:      ()                  => ipcRenderer.send('close-window'),
   onConfigLoaded:   (cb)                => ipcRenderer.on('config-loaded', (_, c) => cb(c)),
+  
+  googleLogin:      ()                  => ipcRenderer.invoke('google-login'),
+  googleLogout:     ()                  => ipcRenderer.invoke('google-logout'),
+  isGoogleAuth:     ()                  => ipcRenderer.invoke('is-google-authenticated'),
+  getGoogleEmail:   ()                  => ipcRenderer.invoke('get-google-email'),
+  onDataUpdatedFromSync: (cb)           => ipcRenderer.on('data-updated-from-sync', () => cb()),
+  onGoogleSyncUpdatedIds: (cb)          => ipcRenderer.on('google-sync-updated-ids', (_, dateStr) => cb(dateStr)),
 });

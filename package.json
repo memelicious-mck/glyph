@@ -31,11 +31,18 @@
       "main.js",
       "preload.js",
       "launch.js",
+      "google-sync.js",
       "renderer/**/*"
     ]
   },
   "devDependencies": {
     "electron": "^41.0.3",
     "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "google-auth-library": "^10.6.2",
+    "googleapis": "^171.4.0",
+    "server-destroy": "^1.0.1"
   }
 }

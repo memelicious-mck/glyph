@@ -36,6 +36,7 @@
     <button class="nav-btn" id="btn-prev">&#9664;</button>
     <div class="date-center" id="date-center">
       <span id="date-text"></span>
+      <span id="sync-status" style="font-size: 10px; margin-left: 6px; opacity: 0.5;" title="Google Tasks"></span>
       <span class="cal-arrow" id="cal-arrow">&#9662;</span>
     </div>
     <button class="nav-btn" id="btn-next">&#9654;</button>
@@ -148,6 +149,13 @@
         <div class="field">
           <label>Section Order</label>
           <div id="section-order-list" class="section-order-list"></div>
+        </div>
+        <div class="field">
+          <label>Google Tasks</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+             <span id="cfg-sync-status" style="font-size: 12px; opacity: 0.7;">Checking...</span>
+             <button id="btn-google-auth" style="background:transparent; color:inherit; border:1px solid #555; border-radius:4px; padding:2px 8px; cursor:pointer;">Login</button>
+          </div>
         </div>
         <div class="field">
           <label>Accent Color</label>

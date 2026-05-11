@@ -2,6 +2,7 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage } =
 const path = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
+const googleSync = require('./google-sync');
 
 // ---------------------------------------------------------------------------
 // Single instance lock
@@ -229,11 +230,42 @@ function setupIPC() {
     return data[dateStr] || { notes: [], todos: [], followups: [] };
   });
 
-  ipcMain.handle('save-day', (_, dateStr, dayData) => {
+  let syncTimer = null;
+  ipcMain.handle('save-day', async (_, dateStr, dayData) => {
     const data = loadData();
     data[dateStr] = dayData;
     saveData(data);
+    
+    if (dayData.todos) {
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        googleSync.requestPush(dateStr).then(modified => {
+          if (modified && win && !win.isDestroyed()) {
+             win.webContents.send('google-sync-updated-ids', dateStr);
+          }
+        });
+      }, 1500); // 1.5 seconds debounce
+    }
+    
     return true;
+  });
+
+  ipcMain.handle('google-login', async () => {
+    await googleSync.authenticate();
+    return true;
+  });
+
+  ipcMain.handle('google-logout', async () => {
+    await googleSync.logout();
+    return true;
+  });
+
+  ipcMain.handle('is-google-authenticated', () => {
+    return googleSync.isAuthenticated();
+  });
+
+  ipcMain.handle('get-google-email', async () => {
+    return await googleSync.getUserEmail();
   });
 
   ipcMain.handle('get-config', () => config);
@@ -288,6 +320,19 @@ if (gotLock) {
   app.whenReady().then(() => {
     initPaths();
     loadConfig();
+    
+    googleSync.initPaths();
+    if (googleSync.loadTokens()) {
+      googleSync.initTaskList().then(() => {
+         googleSync.startAutoSync();
+      });
+    }
+    googleSync.onDataUpdated = () => {
+       if (win && !win.isDestroyed()) {
+          win.webContents.send('data-updated-from-sync');
+       }
+    };
+    
     createWindow();
     createTray();
     registerGlobalShortcut();

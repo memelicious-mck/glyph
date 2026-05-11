@@ -2,53 +2,53 @@
   'use strict';
 
   // ─── State ──────────────────────────────────────────────────────
-  let currentDate   = new Date();
-  let dayData       = {};
-  let config        = {};
-  let pendingCfg    = {};
-  let calOpen       = false;
-  let calMonth      = new Date();
+  let currentDate = new Date();
+  let dayData = {};
+  let config = {};
+  let pendingCfg = {};
+  let calOpen = false;
+  let calMonth = new Date();
   let datesWithData = new Set();
-  let suppressBlur  = false;
+  let suppressBlur = false;
 
   // ─── DOM ────────────────────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
-  const dateText    = $('date-text');
-  const calArrow    = $('cal-arrow');
-  const calendar    = $('calendar');
-  const calGrid     = $('cal-grid');
-  const calLabel    = $('cal-label');
-  const content     = $('content');
-  const todosList   = $('todos-list');
+  const dateText = $('date-text');
+  const calArrow = $('cal-arrow');
+  const calendar = $('calendar');
+  const calGrid = $('cal-grid');
+  const calLabel = $('cal-label');
+  const content = $('content');
+  const todosList = $('todos-list');
   const followupsList = $('followups-list');
   const notesBlocks = $('notes-blocks');
-  const overlay     = $('settings-overlay');
-  const btnToday    = $('btn-today');
-  const todosBody   = $('todos-body');
+  const overlay = $('settings-overlay');
+  const btnToday = $('btn-today');
+  const todosBody = $('todos-body');
   const followupsBody = $('followups-body');
-  const notesBody   = $('notes-body');
-  const todosChev   = $('todos-chev');
+  const notesBody = $('notes-body');
+  const todosChev = $('todos-chev');
   const followupsChev = $('followups-chev');
-  const notesChev   = $('notes-chev');
+  const notesChev = $('notes-chev');
 
   const sectionEls = {
-    todos:     document.querySelector('.todos-section'),
+    todos: document.querySelector('.todos-section'),
     followups: document.querySelector('.followups-section'),
-    notes:     document.querySelector('.notes-section'),
+    notes: document.querySelector('.notes-section'),
   };
 
   // ─── Helpers ────────────────────────────────────────────────────
   const fmtKey = (d) =>
-    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const fmtDisplay = (d) =>
-    d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,10);
+    d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   const isToday = (d) => {
     const t = new Date();
-    return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+    return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
   };
-  const escAttr = (s) => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  const escHtml = (s) => { const d=document.createElement('span'); d.textContent=s; return d.innerHTML; };
+  const escAttr = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const escHtml = (s) => { const d = document.createElement('span'); d.textContent = s; return d.innerHTML; };
 
   // ─── ContentEditable cursor helpers ─────────────────────────────
   function isCursorAtStart(el) {
@@ -180,15 +180,15 @@
     }
     if (Array.isArray(dayData.notes)) {
       dayData.notes = dayData.notes.map(n => {
-        if (n.type === 'text'    && n.html !== undefined) return n;
+        if (n.type === 'text' && n.html !== undefined) return n;
         if (n.type === 'callout' && n.html !== undefined) return n;
         if (n.type === 'text')
-          return { id: n.id, type: 'text', html: escHtml(n.text||'').replace(/\n/g,'<br>') };
+          return { id: n.id, type: 'text', html: escHtml(n.text || '').replace(/\n/g, '<br>') };
         if (n.type === 'callout')
-          return { id: n.id, type: 'callout', title: n.title||'', html: n.body ? escHtml(n.body).replace(/\n/g,'<br>') : '', collapsed: n.collapsed ?? true };
+          return { id: n.id, type: 'callout', title: n.title || '', html: n.body ? escHtml(n.body).replace(/\n/g, '<br>') : '', collapsed: n.collapsed ?? true };
         if (n.content)
-          return { id: n.id, type: 'text', html: escHtml(n.content).replace(/\n/g,'<br>') };
-        return { id: n.id||uid(), type: 'text', html: '' };
+          return { id: n.id, type: 'text', html: escHtml(n.content).replace(/\n/g, '<br>') };
+        return { id: n.id || uid(), type: 'text', html: '' };
       });
       return;
     }
@@ -205,10 +205,10 @@
 
   function mergeAdjacentText() {
     for (let i = dayData.notes.length - 1; i > 0; i--) {
-      if (dayData.notes[i].type === 'text' && dayData.notes[i-1].type === 'text') {
-        const a = dayData.notes[i-1].html || '';
+      if (dayData.notes[i].type === 'text' && dayData.notes[i - 1].type === 'text') {
+        const a = dayData.notes[i - 1].html || '';
         const b = dayData.notes[i].html || '';
-        dayData.notes[i-1].html = a + (a && b ? '<br>' : '') + b;
+        dayData.notes[i - 1].html = a + (a && b ? '<br>' : '') + b;
         dayData.notes.splice(i, 1);
       }
     }
@@ -225,73 +225,73 @@
 
   // ── Todos ──
   function renderTodos() {
-    todosList.innerHTML = dayData.todos.map((t,i) => `
+    todosList.innerHTML = dayData.todos.map((t, i) => `
       <div class="todo-row" data-i="${i}">
-        <input type="checkbox" class="todo-cb" data-i="${i}" ${t.done?'checked':''}/>
-        <input type="text" class="todo-text ${t.done?'done':''}" data-i="${i}"
-               value="${escAttr(t.text||'')}"/>
+        <input type="checkbox" class="todo-cb" data-i="${i}" ${t.done ? 'checked' : ''}/>
+        <input type="text" class="todo-text ${t.done ? 'done' : ''}" data-i="${i}"
+               value="${escAttr(t.text || '')}"/>
         <button class="todo-del" data-i="${i}">&#10005;</button>
       </div>`).join('');
 
     todosList.querySelectorAll('.todo-cb').forEach(cb =>
-      cb.addEventListener('change', () => { dayData.todos[+cb.dataset.i].done=cb.checked; saveDay(); renderTodos(); }));
+      cb.addEventListener('change', () => { dayData.todos[+cb.dataset.i].done = cb.checked; saveDay(); renderTodos(); }));
 
     todosList.querySelectorAll('.todo-text').forEach(inp => {
-      inp.addEventListener('input', () => { dayData.todos[+inp.dataset.i].text=inp.value; saveDay(); });
+      inp.addEventListener('input', () => { dayData.todos[+inp.dataset.i].text = inp.value; saveDay(); });
       inp.addEventListener('keydown', e => {
         const i = +inp.dataset.i;
-        if (e.key==='Enter') { e.preventDefault(); dayData.todos.splice(i+1,0,{id:uid(),text:'',done:false}); saveDay(); renderTodos(); focusTodo(i+1); return; }
-        if (e.key==='Backspace' && !inp.value) { e.preventDefault(); dayData.todos.splice(i,1); saveDay(); renderTodos(); if(i>0) focusTodo(i-1); return; }
-        if (e.key==='ArrowUp') { e.preventDefault(); focusPrevElement(inp); return; }
-        if (e.key==='ArrowDown') { e.preventDefault(); focusNextElement(inp); return; }
+        if (e.key === 'Enter') { e.preventDefault(); dayData.todos.splice(i + 1, 0, { id: uid(), text: '', done: false }); saveDay(); renderTodos(); focusTodo(i + 1); return; }
+        if (e.key === 'Backspace' && !inp.value) { e.preventDefault(); dayData.todos.splice(i, 1); saveDay(); renderTodos(); if (i > 0) focusTodo(i - 1); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); focusPrevElement(inp); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); focusNextElement(inp); return; }
       });
       inp.addEventListener('blur', () => {
-        const item = dayData.todos[+inp.dataset.i]; if(!item) return;
+        const item = dayData.todos[+inp.dataset.i]; if (!item) return;
         const id = item.id;
-        setTimeout(() => { const p=dayData.todos.findIndex(x=>x.id===id); if(p!==-1 && !dayData.todos[p].text.trim()) { dayData.todos.splice(p,1); saveDay(); renderTodos(); } }, 180);
+        setTimeout(() => { const p = dayData.todos.findIndex(x => x.id === id); if (p !== -1 && !dayData.todos[p].text.trim()) { dayData.todos.splice(p, 1); saveDay(); renderTodos(); } }, 180);
       });
     });
 
     todosList.querySelectorAll('.todo-del').forEach(b =>
-      b.addEventListener('click', () => { dayData.todos.splice(+b.dataset.i,1); saveDay(); renderTodos(); }));
+      b.addEventListener('click', () => { dayData.todos.splice(+b.dataset.i, 1); saveDay(); renderTodos(); }));
   }
 
-  function focusTodo(i) { setTimeout(()=>{ const el=todosList.querySelectorAll('.todo-text')[i]; if(el) el.focus(); },20); }
+  function focusTodo(i) { setTimeout(() => { const el = todosList.querySelectorAll('.todo-text')[i]; if (el) el.focus(); }, 20); }
 
   // ── Follow-ups ──
   function renderFollowups() {
-    followupsList.innerHTML = dayData.followups.map((f,i) => `
+    followupsList.innerHTML = dayData.followups.map((f, i) => `
       <div class="followup-row" data-i="${i}">
-        <button class="followup-icon ${f.resolved?'resolved':''}" data-i="${i}" title="Toggle resolved">!</button>
-        <input type="text" class="followup-text ${f.resolved?'resolved':''}" data-i="${i}"
-               value="${escAttr(f.text||'')}"/>
+        <button class="followup-icon ${f.resolved ? 'resolved' : ''}" data-i="${i}" title="Toggle resolved">!</button>
+        <input type="text" class="followup-text ${f.resolved ? 'resolved' : ''}" data-i="${i}"
+               value="${escAttr(f.text || '')}"/>
         <button class="followup-del" data-i="${i}">&#10005;</button>
       </div>`).join('');
 
     followupsList.querySelectorAll('.followup-icon').forEach(btn =>
-      btn.addEventListener('click', () => { dayData.followups[+btn.dataset.i].resolved=!dayData.followups[+btn.dataset.i].resolved; saveDay(); renderFollowups(); }));
+      btn.addEventListener('click', () => { dayData.followups[+btn.dataset.i].resolved = !dayData.followups[+btn.dataset.i].resolved; saveDay(); renderFollowups(); }));
 
     followupsList.querySelectorAll('.followup-text').forEach(inp => {
-      inp.addEventListener('input', () => { dayData.followups[+inp.dataset.i].text=inp.value; saveDay(); });
+      inp.addEventListener('input', () => { dayData.followups[+inp.dataset.i].text = inp.value; saveDay(); });
       inp.addEventListener('keydown', e => {
         const i = +inp.dataset.i;
-        if (e.key==='Enter') { e.preventDefault(); dayData.followups.splice(i+1,0,{id:uid(),text:'',resolved:false}); saveDay(); renderFollowups(); focusFollowup(i+1); return; }
-        if (e.key==='Backspace' && !inp.value) { e.preventDefault(); dayData.followups.splice(i,1); saveDay(); renderFollowups(); if(i>0) focusFollowup(i-1); return; }
-        if (e.key==='ArrowUp') { e.preventDefault(); focusPrevElement(inp); return; }
-        if (e.key==='ArrowDown') { e.preventDefault(); focusNextElement(inp); return; }
+        if (e.key === 'Enter') { e.preventDefault(); dayData.followups.splice(i + 1, 0, { id: uid(), text: '', resolved: false }); saveDay(); renderFollowups(); focusFollowup(i + 1); return; }
+        if (e.key === 'Backspace' && !inp.value) { e.preventDefault(); dayData.followups.splice(i, 1); saveDay(); renderFollowups(); if (i > 0) focusFollowup(i - 1); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); focusPrevElement(inp); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); focusNextElement(inp); return; }
       });
       inp.addEventListener('blur', () => {
-        const item = dayData.followups[+inp.dataset.i]; if(!item) return;
+        const item = dayData.followups[+inp.dataset.i]; if (!item) return;
         const id = item.id;
-        setTimeout(() => { const p=dayData.followups.findIndex(x=>x.id===id); if(p!==-1 && !dayData.followups[p].text.trim()) { dayData.followups.splice(p,1); saveDay(); renderFollowups(); } }, 180);
+        setTimeout(() => { const p = dayData.followups.findIndex(x => x.id === id); if (p !== -1 && !dayData.followups[p].text.trim()) { dayData.followups.splice(p, 1); saveDay(); renderFollowups(); } }, 180);
       });
     });
 
     followupsList.querySelectorAll('.followup-del').forEach(b =>
-      b.addEventListener('click', () => { dayData.followups.splice(+b.dataset.i,1); saveDay(); renderFollowups(); }));
+      b.addEventListener('click', () => { dayData.followups.splice(+b.dataset.i, 1); saveDay(); renderFollowups(); }));
   }
 
-  function focusFollowup(i) { setTimeout(()=>{ const el=followupsList.querySelectorAll('.followup-text')[i]; if(el) el.focus(); },20); }
+  function focusFollowup(i) { setTimeout(() => { const el = followupsList.querySelectorAll('.followup-text')[i]; if (el) el.focus(); }, 20); }
 
   // ── Notes (contenteditable text blocks + callouts) ──
   function renderNotes(focusInfo) {
@@ -299,16 +299,16 @@
       if (block.type === 'callout') {
         return `<div class="callout" data-i="${i}">
           <div class="callout-head">
-            <span class="callout-chev ${block.collapsed?'':'open'}" data-i="${i}">&#9654;</span>
+            <span class="callout-chev ${block.collapsed ? '' : 'open'}" data-i="${i}">&#9654;</span>
             <input type="text" class="callout-title" data-i="${i}"
-                   value="${escAttr(block.title||'')}" placeholder="Callout\u2026"/>
+                   value="${escAttr(block.title || '')}" placeholder="Callout\u2026"/>
           </div>
-          <div class="callout-body ${block.collapsed?'':'open'}">
-            <div class="callout-detail" contenteditable="true" data-i="${i}">${block.html||''}</div>
+          <div class="callout-body ${block.collapsed ? '' : 'open'}">
+            <div class="callout-detail" contenteditable="true" data-i="${i}">${block.html || ''}</div>
           </div>
         </div>`;
       }
-      return `<div class="notes-text" contenteditable="true" data-i="${i}">${block.html||''}</div>`;
+      return `<div class="notes-text" contenteditable="true" data-i="${i}">${block.html || ''}</div>`;
     }).join('');
 
     wireNoteTextBlocks();
@@ -340,7 +340,7 @@
 
         if (e.key === 'Tab' && !e.shiftKey) {
           e.preventDefault();
-          if (i > 0 && dayData.notes[i-1].type === 'callout') {
+          if (i > 0 && dayData.notes[i - 1].type === 'callout') {
             absorbIntoCallout(i, el);
           } else {
             document.execCommand('insertText', false, '  ');
@@ -356,10 +356,10 @@
             mergeAdjacentText();
             saveDay();
             if (i > 0) {
-              const prev = dayData.notes[i-1];
-              if (prev.type === 'text') renderNotes({ type:'text', index:i-1, pos:'end' });
-              else if (!prev.collapsed) renderNotes({ type:'callout-body', index:i-1, pos:'end' });
-              else renderNotes({ type:'callout-title', index:i-1 });
+              const prev = dayData.notes[i - 1];
+              if (prev.type === 'text') renderNotes({ type: 'text', index: i - 1, pos: 'end' });
+              else if (!prev.collapsed) renderNotes({ type: 'callout-body', index: i - 1, pos: 'end' });
+              else renderNotes({ type: 'callout-title', index: i - 1 });
             } else { renderNotes(); }
             setTimeout(() => { suppressBlur = false; }, 400);
             return;
@@ -393,7 +393,7 @@
         setTimeout(() => {
           if (suppressBlur) return;
           const p = dayData.notes.findIndex(x => x.id === id);
-          if (p !== -1 && !(dayData.notes[p].html||'').replace(/<[^>]*>/g,'').trim() && dayData.notes.length > 1) {
+          if (p !== -1 && !(dayData.notes[p].html || '').replace(/<[^>]*>/g, '').trim() && dayData.notes.length > 1) {
             dayData.notes.splice(p, 1);
             mergeAdjacentText();
             saveDay();
@@ -429,7 +429,7 @@
           e.preventDefault();
           dayData.notes[i].collapsed = false;
           saveDay();
-          renderNotes({ type:'callout-body', index:i, pos:'start' });
+          renderNotes({ type: 'callout-body', index: i, pos: 'start' });
           return;
         }
 
@@ -470,7 +470,7 @@
           dayData.notes[i].collapsed = true;
           dayData.notes[i].html = '';
           saveDay();
-          renderNotes({ type:'callout-title', index:i });
+          renderNotes({ type: 'callout-title', index: i });
           return;
         }
 
@@ -578,14 +578,14 @@
     suppressBlur = true;
     const c = dayData.notes[blockIdx];
     let html = escHtml(c.title || '');
-    const bodyClean = (c.html||'').replace(/<[^>]*>/g,'').trim();
+    const bodyClean = (c.html || '').replace(/<[^>]*>/g, '').trim();
     if (bodyClean) html += '<br>' + c.html;
 
     dayData.notes[blockIdx] = { id: c.id, type: 'text', html };
     mergeAdjacentText();
     saveDay();
     const idx = dayData.notes.findIndex(n => n.id === c.id);
-    renderNotes({ type: 'text', index: idx >= 0 ? idx : Math.min(blockIdx, dayData.notes.length-1), pos: 'end' });
+    renderNotes({ type: 'text', index: idx >= 0 ? idx : Math.min(blockIdx, dayData.notes.length - 1), pos: 'end' });
     setTimeout(() => { suppressBlur = false; }, 400);
   }
 
@@ -633,7 +633,7 @@
   // ─── Click-to-add ─────────────────────────────────────────────
   $('notes-click').addEventListener('click', () => {
     ensureSectionOpen('notes');
-    if (!dayData.notes.length || dayData.notes[dayData.notes.length-1].type !== 'text') {
+    if (!dayData.notes.length || dayData.notes[dayData.notes.length - 1].type !== 'text') {
       dayData.notes.push({ id: uid(), type: 'text', html: '' });
       saveDay();
     }
@@ -660,7 +660,7 @@
   $('notes-hdr').addEventListener('click', () => toggleSection('notes'));
 
   function sectionRefs(name) {
-    if (name === 'todos')     return { body: todosBody,     chev: todosChev };
+    if (name === 'todos') return { body: todosBody, chev: todosChev };
     if (name === 'followups') return { body: followupsBody, chev: followupsChev };
     return { body: notesBody, chev: notesChev };
   }
@@ -682,32 +682,32 @@
     calArrow.classList.toggle('open', calOpen);
     if (calOpen) { calMonth = new Date(currentDate); refreshCalendar(); }
   }
-  function closeCalendar() { calOpen=false; calendar.classList.remove('open'); calArrow.classList.remove('open'); }
-  $('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()-1); renderCalendar(); });
-  $('cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()+1); renderCalendar(); });
+  function closeCalendar() { calOpen = false; calendar.classList.remove('open'); calArrow.classList.remove('open'); }
+  $('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCalendar(); });
+  $('cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); });
 
   async function refreshCalendar() { datesWithData = new Set(await window.api.getAllDates()); renderCalendar(); }
 
   function renderCalendar() {
-    const year=calMonth.getFullYear(), month=calMonth.getMonth();
-    calLabel.textContent = calMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    const startOff = (new Date(year,month,1).getDay()+6)%7;
-    const totalDays = new Date(year,month+1,0).getDate();
+    const year = calMonth.getFullYear(), month = calMonth.getMonth();
+    calLabel.textContent = calMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const startOff = (new Date(year, month, 1).getDay() + 6) % 7;
+    const totalDays = new Date(year, month + 1, 0).getDate();
     const todayStr = fmtKey(new Date()), selStr = fmtKey(currentDate);
-    let html = ['Mo','Tu','We','Th','Fr','Sa','Su'].map(d=>`<span class="cal-dow">${d}</span>`).join('');
-    for (let i=0;i<startOff;i++) html += '<span class="cal-day empty"></span>';
-    for (let d=1;d<=totalDays;d++) {
-      const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const cls = ['cal-day',ds===todayStr?'today':'',ds===selStr?'selected':'',datesWithData.has(ds)?'has-data':''].filter(Boolean).join(' ');
+    let html = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => `<span class="cal-dow">${d}</span>`).join('');
+    for (let i = 0; i < startOff; i++) html += '<span class="cal-day empty"></span>';
+    for (let d = 1; d <= totalDays; d++) {
+      const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const cls = ['cal-day', ds === todayStr ? 'today' : '', ds === selStr ? 'selected' : '', datesWithData.has(ds) ? 'has-data' : ''].filter(Boolean).join(' ');
       html += `<span class="${cls}" data-date="${ds}">${d}</span>`;
     }
     calGrid.innerHTML = html;
     calGrid.querySelectorAll('.cal-day:not(.empty)').forEach(el =>
-      el.addEventListener('click', () => { currentDate = new Date(el.dataset.date+'T12:00:00'); closeCalendar(); loadDay(); }));
+      el.addEventListener('click', () => { currentDate = new Date(el.dataset.date + 'T12:00:00'); closeCalendar(); loadDay(); }));
   }
 
   // ─── Date nav ──────────────────────────────────────────────────
-  function navDay(off) { currentDate = new Date(currentDate.getTime()+off*864e5); loadDay(); }
+  function navDay(off) { currentDate = new Date(currentDate.getTime() + off * 864e5); loadDay(); }
   $('btn-prev').addEventListener('click', () => navDay(-1));
   $('btn-next').addEventListener('click', () => navDay(1));
   btnToday.addEventListener('click', () => { currentDate = new Date(); loadDay(); });
@@ -723,14 +723,14 @@
   // ─── Keyboard shortcuts ────────────────────────────────────────
   function keyCombo(e) {
     const p = [];
-    if (e.ctrlKey||e.metaKey) p.push('CmdOrCtrl');
+    if (e.ctrlKey || e.metaKey) p.push('CmdOrCtrl');
     if (e.altKey) p.push('Alt');
     if (e.shiftKey) p.push('Shift');
     const k = e.key;
-    if (!['Control','Alt','Shift','Meta'].includes(k)) p.push(k.length===1? k.toUpperCase() : k);
+    if (!['Control', 'Alt', 'Shift', 'Meta'].includes(k)) p.push(k.length === 1 ? k.toUpperCase() : k);
     return p.join('+');
   }
-  const matchSC = (a,b) => a.toLowerCase() === (b||'').toLowerCase();
+  const matchSC = (a, b) => a.toLowerCase() === (b || '').toLowerCase();
 
   function isEditing() {
     const tag = document.activeElement?.tagName;
@@ -744,41 +744,41 @@
     if (matchSC(combo, sc.newTodo || 'CmdOrCtrl+T')) {
       e.preventDefault();
       ensureSectionOpen('todos');
-      dayData.todos.push({id:uid(),text:'',done:false}); saveDay(); renderTodos(); focusTodo(dayData.todos.length-1);
+      dayData.todos.push({ id: uid(), text: '', done: false }); saveDay(); renderTodos(); focusTodo(dayData.todos.length - 1);
       return;
     }
     if (matchSC(combo, sc.newFollowup || 'CmdOrCtrl+U')) {
       e.preventDefault();
       ensureSectionOpen('followups');
-      dayData.followups.push({id:uid(),text:'',resolved:false}); saveDay(); renderFollowups(); focusFollowup(dayData.followups.length-1);
+      dayData.followups.push({ id: uid(), text: '', resolved: false }); saveDay(); renderFollowups(); focusFollowup(dayData.followups.length - 1);
       return;
     }
     if (matchSC(combo, sc.newNote || 'CmdOrCtrl+N')) {
       e.preventDefault();
       ensureSectionOpen('notes');
-      if (!dayData.notes.length || dayData.notes[dayData.notes.length-1].type !== 'text') {
-        dayData.notes.push({id:uid(),type:'text',html:''});
+      if (!dayData.notes.length || dayData.notes[dayData.notes.length - 1].type !== 'text') {
+        dayData.notes.push({ id: uid(), type: 'text', html: '' });
         saveDay();
       }
-      renderNotes({type:'text', index:dayData.notes.length-1, pos:'end'});
+      renderNotes({ type: 'text', index: dayData.notes.length - 1, pos: 'end' });
       return;
     }
     if (matchSC(combo, sc.pinWindow || 'CmdOrCtrl+Shift+P')) { e.preventDefault(); $('btn-pin').click(); return; }
-    if (e.key==='Escape') {
+    if (e.key === 'Escape') {
       if (calOpen) { closeCalendar(); return; }
       if (isEditing()) { document.activeElement.blur(); return; }
       window.api.minimizeWindow(); return;
     }
     if (!isEditing()) {
-      if (e.key==='ArrowLeft') navDay(-1);
-      if (e.key==='ArrowRight') navDay(1);
+      if (e.key === 'ArrowLeft') navDay(-1);
+      if (e.key === 'ArrowRight') navDay(1);
     }
   });
 
   // ─── Settings ──────────────────────────────────────────────────
   $('btn-settings').addEventListener('click', openSettings);
   $('btn-close-settings').addEventListener('click', closeSettings);
-  overlay.addEventListener('click', e => { if(e.target===overlay) closeSettings(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
 
   const SECTION_LABELS = { todos: 'TODOS', followups: 'FOLLOW-UPS', notes: 'NOTES' };
 
@@ -787,8 +787,8 @@
     const order = pendingCfg.sectionOrder || ['todos', 'followups', 'notes'];
     list.innerHTML = order.map((name, i) => `
       <div class="section-order-row" data-idx="${i}">
-        <button class="section-order-btn" data-dir="up" data-idx="${i}" ${i===0?'disabled':''}>\u25B2</button>
-        <button class="section-order-btn" data-dir="down" data-idx="${i}" ${i===order.length-1?'disabled':''}>\u25BC</button>
+        <button class="section-order-btn" data-dir="up" data-idx="${i}" ${i === 0 ? 'disabled' : ''}>\u25B2</button>
+        <button class="section-order-btn" data-dir="down" data-idx="${i}" ${i === order.length - 1 ? 'disabled' : ''}>\u25BC</button>
         <span class="section-order-label">${SECTION_LABELS[name] || name}</span>
       </div>`).join('');
 
@@ -797,8 +797,8 @@
         const idx = +btn.dataset.idx;
         const dir = btn.dataset.dir;
         const arr = pendingCfg.sectionOrder || ['todos', 'followups', 'notes'];
-        if (dir === 'up' && idx > 0) { [arr[idx-1], arr[idx]] = [arr[idx], arr[idx-1]]; }
-        if (dir === 'down' && idx < arr.length - 1) { [arr[idx], arr[idx+1]] = [arr[idx+1], arr[idx]]; }
+        if (dir === 'up' && idx > 0) { [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]]; }
+        if (dir === 'down' && idx < arr.length - 1) { [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]]; }
         pendingCfg.sectionOrder = arr;
         renderSectionOrderUI();
       });
@@ -809,20 +809,21 @@
     config = await window.api.getConfig();
     pendingCfg = JSON.parse(JSON.stringify(config));
     if (!pendingCfg.sectionOrder) pendingCfg.sectionOrder = ['todos', 'followups', 'notes'];
-    $('sc-global').textContent    = prettySC(config.globalShortcut);
-    $('sc-note').textContent      = prettySC(config.shortcuts?.newNote);
-    $('sc-callout').textContent   = prettySC(config.shortcuts?.callout);
-    $('sc-todo').textContent      = prettySC(config.shortcuts?.newTodo);
-    $('sc-followup').textContent  = prettySC(config.shortcuts?.newFollowup);
-    $('sc-pin').textContent       = prettySC(config.shortcuts?.pinWindow);
-    $('cfg-color-picker').value   = config.accentColor || '#5D100A';
-    $('cfg-color-text').value     = config.accentColor || '#5D100A';
-    $('cfg-tray-only').checked    = !!config.trayOnly;
+    $('sc-global').textContent = prettySC(config.globalShortcut);
+    $('sc-note').textContent = prettySC(config.shortcuts?.newNote);
+    $('sc-callout').textContent = prettySC(config.shortcuts?.callout);
+    $('sc-todo').textContent = prettySC(config.shortcuts?.newTodo);
+    $('sc-followup').textContent = prettySC(config.shortcuts?.newFollowup);
+    $('sc-pin').textContent = prettySC(config.shortcuts?.pinWindow);
+    $('cfg-color-picker').value = config.accentColor || '#5D100A';
+    $('cfg-color-text').value = config.accentColor || '#5D100A';
+    $('cfg-tray-only').checked = !!config.trayOnly;
     renderSectionOrderUI();
+    await checkGoogleAuth();
     overlay.classList.add('open');
   }
   function closeSettings() { overlay.classList.remove('open'); }
-  const prettySC = s => (s||'').replace(/CmdOrCtrl/g,'Ctrl');
+  const prettySC = s => (s || '').replace(/CmdOrCtrl/g, 'Ctrl');
 
   document.querySelectorAll('.shortcut-capture').forEach(el => {
     el.addEventListener('focus', () => { el.textContent = 'Press shortcut\u2026'; });
@@ -833,26 +834,26 @@
     });
     el.addEventListener('keydown', e => {
       e.preventDefault(); e.stopPropagation();
-      if (e.key==='Escape') { el.blur(); return; }
+      if (e.key === 'Escape') { el.blur(); return; }
       const parts = [];
-      if (e.ctrlKey||e.metaKey) parts.push('CmdOrCtrl');
+      if (e.ctrlKey || e.metaKey) parts.push('CmdOrCtrl');
       if (e.altKey) parts.push('Alt');
       if (e.shiftKey) parts.push('Shift');
       const k = e.key;
-      if (['Control','Alt','Shift','Meta'].includes(k)) return;
-      parts.push(k.length===1? k.toUpperCase() : k);
+      if (['Control', 'Alt', 'Shift', 'Meta'].includes(k)) return;
+      parts.push(k.length === 1 ? k.toUpperCase() : k);
       const str = parts.join('+');
       const key = el.dataset.key;
-      if (key.startsWith('shortcuts.')) { if(!pendingCfg.shortcuts) pendingCfg.shortcuts={}; pendingCfg.shortcuts[key.split('.')[1]]=str; }
-      else { pendingCfg[key]=str; }
+      if (key.startsWith('shortcuts.')) { if (!pendingCfg.shortcuts) pendingCfg.shortcuts = {}; pendingCfg.shortcuts[key.split('.')[1]] = str; }
+      else { pendingCfg[key] = str; }
       el.textContent = prettySC(str);
       el.blur();
     });
   });
 
-  $('cfg-color-picker').addEventListener('input', e => { $('cfg-color-text').value=e.target.value; pendingCfg.accentColor=e.target.value; });
+  $('cfg-color-picker').addEventListener('input', e => { $('cfg-color-text').value = e.target.value; pendingCfg.accentColor = e.target.value; });
   $('cfg-color-text').addEventListener('input', e => {
-    if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) { $('cfg-color-picker').value=e.target.value; pendingCfg.accentColor=e.target.value; }
+    if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) { $('cfg-color-picker').value = e.target.value; pendingCfg.accentColor = e.target.value; }
   });
   $('cfg-tray-only').addEventListener('change', e => { pendingCfg.trayOnly = e.target.checked; });
   $('btn-save-settings').addEventListener('click', async () => {
@@ -866,19 +867,19 @@
   // ─── Accent ────────────────────────────────────────────────────
   function applyAccent(hex) {
     if (!hex) return;
-    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-    const hov = '#'+[r,g,b].map(c=>Math.min(255,c+35).toString(16).padStart(2,'0')).join('');
-    document.documentElement.style.setProperty('--accent',hex);
-    document.documentElement.style.setProperty('--accent-hover',hov);
-    document.documentElement.style.setProperty('--accent-muted',hex+'40');
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    const hov = '#' + [r, g, b].map(c => Math.min(255, c + 35).toString(16).padStart(2, '0')).join('');
+    document.documentElement.style.setProperty('--accent', hex);
+    document.documentElement.style.setProperty('--accent-hover', hov);
+    document.documentElement.style.setProperty('--accent-muted', hex + '40');
   }
   function updateHints() {
     const s = config.shortcuts || {};
-    $('hint-todo').textContent     = prettySC(s.newTodo     || 'CmdOrCtrl+T')       + '  Todo';
-    $('hint-followup').textContent = prettySC(s.newFollowup || 'CmdOrCtrl+U')       + '  Follow-up';
-    $('hint-note').textContent     = prettySC(s.newNote     || 'CmdOrCtrl+N')       + '  Notes';
-    $('hint-callout').textContent  = prettySC(s.callout     || 'CmdOrCtrl+/')       + '  Callout';
-    $('hint-pin').textContent      = prettySC(s.pinWindow   || 'CmdOrCtrl+Shift+P') + '  Pin';
+    $('hint-todo').textContent = prettySC(s.newTodo || 'CmdOrCtrl+T') + '  Todo';
+    $('hint-followup').textContent = prettySC(s.newFollowup || 'CmdOrCtrl+U') + '  Follow-up';
+    $('hint-note').textContent = prettySC(s.newNote || 'CmdOrCtrl+N') + '  Notes';
+    $('hint-callout').textContent = prettySC(s.callout || 'CmdOrCtrl+/') + '  Callout';
+    $('hint-pin').textContent = prettySC(s.pinWindow || 'CmdOrCtrl+Shift+P') + '  Pin';
   }
 
   // ─── Init ──────────────────────────────────────────────────────
@@ -888,7 +889,57 @@
     applySectionOrder();
     updateHints();
     $('btn-pin').classList.toggle('pinned', !!config.alwaysOnTop);
+
+    $('btn-google-auth').addEventListener('click', async () => {
+      try {
+        const isAuth = await window.api.isGoogleAuth();
+        if (isAuth) {
+          await window.api.googleLogout();
+        } else {
+          await window.api.googleLogin();
+        }
+      } catch (err) {
+        alert("Google Sync Error: " + err.message);
+        console.error(err);
+      }
+      checkGoogleAuth();
+    });
+
+    window.api.onDataUpdatedFromSync(() => {
+      loadDay();
+    });
+
+    window.api.onGoogleSyncUpdatedIds((dateStr) => {
+      if (fmtKey(currentDate) === dateStr) {
+        window.api.loadDay(dateStr).then(d => {
+          if (!d || !d.todos) return;
+          for (const dbTodo of d.todos) {
+            const local = dayData.todos.find(t => t.id === dbTodo.id);
+            if (local && dbTodo.googleTaskId) {
+              local.googleTaskId = dbTodo.googleTaskId;
+            }
+          }
+        });
+      }
+    });
+
+    await checkGoogleAuth();
     await loadDay();
+  }
+
+  async function checkGoogleAuth() {
+    const isAuth = await window.api.isGoogleAuth();
+    if (isAuth) {
+      const email = await window.api.getGoogleEmail();
+      $('cfg-sync-status').textContent = `Logged in as ${email || 'user'}. Getting synced with Google Tasks and Calendar.`;
+      $('btn-google-auth').textContent = 'Logout';
+      $('sync-status').textContent = '\u2601\uFE0F'; // Cloud emoji
+      $('sync-status').title = `Actively syncing as ${email || 'user'}`;
+    } else {
+      $('cfg-sync-status').textContent = 'Not Logged In';
+      $('btn-google-auth').textContent = 'Login';
+      $('sync-status').textContent = '';
+    }
   }
   window.api.onConfigLoaded(c => {
     config = c;
