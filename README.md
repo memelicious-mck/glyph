@@ -33,7 +33,7 @@ Grab the latest build from **[Releases](https://github.com/memelicious-mck/glyph
 
 ## Google Tasks Synchronization
 
-Glyph features a built-in, lightning-fast two-way sync with Google Tasks. When enabled, your TODOs will automatically back up to a "Glyph Sync" list in your Google account and sync with your mobile devices.
+Glyph features a built-in, fast two-way sync with Google Tasks. When enabled, your TODOs will automatically back up to a "Glyph Sync" list in your Google account and sync with your mobile devices.
 
 ### How to Enable Sync
 
